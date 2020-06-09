@@ -10,6 +10,8 @@ freddieBallDelay=285;
 
 imgSize=125;
 
+shootAnimationTime=0.3*fps;
+
 //don't change those variables
 lateralSpeed=lateralSpeed/fps;
 jumpVelocity=450*jumpVelocity/fps;
@@ -117,6 +119,8 @@ function setup() {
   imgJumpRatio=736/493;
   imgStatic=loadImage('static.png'); //241x377
   imgStaticRatio=377/241;
+  imgShoot=loadImage('shoot.png'); //350x631
+  imgShootRatio=631/350
   imgFireball=loadImage('fireball.png'); //322x261
   imgFireballRatio=261/322
   /*imgCloud=loadImage('cloud.png'); //350x140
@@ -126,6 +130,10 @@ function setup() {
 
 function draw() {
   background(220);
+  textSize(16);
+  fill(100,100,200);
+  text('move: left/right/up arrows',10,20);
+  text('shoot: spacebar',10,36);
   line(0,screenSize/5*4,screenSize,screenSize/5*4)
   aFreddie.draw();
   if (keyIsDown(RIGHT_ARROW)) {
@@ -143,8 +151,24 @@ function draw() {
     newTime=new Date().getTime();
     if (newTime > oldTime + freddieBallDelay) {
       aFreddie.balls.push(new ball(new Date().getTime(),imgFireball,imgFireballRatio,aFreddie.x + imgSize + 10,screenSize/5*4 - aFreddie.imgHeight + aFreddie.y + 10,freddieBallSpeed));
-      /*image(imgCloud,aFreddie.x + imgSize + 10,screenSize/5*4 - aFreddie.imgHeight + aFreddie.y + 10,freddieBallSize,freddieBallSize*imgCloudRatio);*/
+      /*image(imgCloud,aFreddie.x + imgSize + 10,screenSize/5*4 - aFreddie.imgHeight + aFreddie.y + 10,freddieBallSize,freddieBallSize*imgCloudRatio);*/ //cloud
+      aFreddie.img=imgShoot;
+      aFreddie.imgRatio=imgShootRatio;
+      aFreddie.shootTime=shootAnimationTime+1;
       oldTime=newTime;
+    }
+  }
+  if (aFreddie.shootTime > 0) {
+  aFreddie.shootTime-=1;
+  }
+  else if (aFreddie.img === imgShoot && aFreddie.shootTime === 0) {
+    if (aFreddie.y === 0) { //au sol
+      aFreddie.img=imgStatic;
+      aFreddie.imgRatio=imgStaticRatio;
+    }
+    else {//jumping
+      aFreddie.img=imgJump;
+      aFreddie.imgRatio=imgJumpRatio; 
     }
   }
 }
