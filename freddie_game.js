@@ -17,6 +17,14 @@ lateralSpeed=lateralSpeed/fps;
 jumpVelocity=450*jumpVelocity/fps;
 gravity=jumpVelocity*2.5/fps;
 oldTime=new Date().getTime() - freddieBallDelay;
+welComeScreen="yes";
+
+function preload() {
+  soundFormats('mp3', 'ogg');
+  mySoundIntro = loadSound('under_pressure.mp3');
+  mySoundGame = loadSound('fat_bottom_girls.mp3');
+  mySoundFireball = loadSound('explosion_2.mp3');
+}
 
 class ball {
   constructor(date,img,imgRatio,x,y,speed) {
@@ -113,8 +121,10 @@ class freddie {
 }
 
 function setup() {
+  mySoundIntro.play();
   createCanvas(screenSize, screenSize);
   frameRate(fps);
+  imgWelcome=loadImage('welcome_image.png');
   imgJump=loadImage('jump.png'); //493x736
   imgJumpRatio=736/493;
   imgStatic=loadImage('static.png'); //241x377
@@ -129,46 +139,57 @@ function setup() {
 }
 
 function draw() {
-  background(220);
-  textSize(16);
-  fill(100,100,200);
-  text('move: left/right/up arrows',10,20);
-  text('shoot: spacebar',10,36);
-  line(0,screenSize/5*4,screenSize,screenSize/5*4)
-  aFreddie.draw();
-  if (keyIsDown(RIGHT_ARROW)) {
-    aFreddie.move("right");
-  }  
-  if (keyIsDown(UP_ARROW) && (aFreddie.inJump === "no")) {
-    aFreddie.img=imgJump;
-    aFreddie.imgRatio=imgJumpRatio;
-    aFreddie.move("up");
-  }
-  if (keyIsDown(LEFT_ARROW)) {
-    aFreddie.move("left");
-  }
-  if (keyIsDown(32)) { //spacebar
-    newTime=new Date().getTime();
-    if (newTime > oldTime + freddieBallDelay) {
-      aFreddie.balls.push(new ball(new Date().getTime(),imgFireball,imgFireballRatio,aFreddie.x + imgSize + 10,screenSize/5*4 - aFreddie.imgHeight + aFreddie.y + 10,freddieBallSpeed));
-      /*image(imgCloud,aFreddie.x + imgSize + 10,screenSize/5*4 - aFreddie.imgHeight + aFreddie.y + 10,freddieBallSize,freddieBallSize*imgCloudRatio);*/ //cloud
-      aFreddie.img=imgShoot;
-      aFreddie.imgRatio=imgShootRatio;
-      aFreddie.shootTime=shootAnimationTime+1;
-      oldTime=newTime;
+  if (welComeScreen === "yes") {
+    image(imgWelcome,0,0,750,750);
+    if (keyIsDown(32)) { //spacebar
+      welComeScreen="no";
+      mySoundIntro.stop();
+      mySoundGame.play();
     }
   }
-  if (aFreddie.shootTime > 0) {
-  aFreddie.shootTime-=1;
-  }
-  else if (aFreddie.img === imgShoot && aFreddie.shootTime === 0) {
-    if (aFreddie.y === 0) { //au sol
-      aFreddie.img=imgStatic;
-      aFreddie.imgRatio=imgStaticRatio;
-    }
-    else {//jumping
+  else {
+    background(220);
+    textSize(16);
+    fill(100,100,200);
+    text('move: left/right/up arrows',10,20);
+    text('shoot: spacebar',10,36);
+    line(0,screenSize/5*4,screenSize,screenSize/5*4)
+    aFreddie.draw();
+    if (keyIsDown(RIGHT_ARROW)) {
+      aFreddie.move("right");
+    }  
+    if (keyIsDown(UP_ARROW) && (aFreddie.inJump === "no")) {
       aFreddie.img=imgJump;
-      aFreddie.imgRatio=imgJumpRatio; 
+      aFreddie.imgRatio=imgJumpRatio;
+      aFreddie.move("up");
+    }
+    if (keyIsDown(LEFT_ARROW)) {
+      aFreddie.move("left");
+    }
+    if (keyIsDown(32)) { //spacebar
+      newTime=new Date().getTime();
+      if (newTime > oldTime + freddieBallDelay) {
+        mySoundFireball.play();
+        aFreddie.balls.push(new ball(new Date().getTime(),imgFireball,imgFireballRatio,aFreddie.x + imgSize + 10,screenSize/5*4 - aFreddie.imgHeight + aFreddie.y + 10,freddieBallSpeed));
+        /*image(imgCloud,aFreddie.x + imgSize + 10,screenSize/5*4 - aFreddie.imgHeight + aFreddie.y + 10,freddieBallSize,freddieBallSize*imgCloudRatio);*/ //cloud
+        aFreddie.img=imgShoot;
+        aFreddie.imgRatio=imgShootRatio;
+        aFreddie.shootTime=shootAnimationTime+1;
+        oldTime=newTime;
+      }
+    }
+    if (aFreddie.shootTime > 0) {
+    aFreddie.shootTime-=1;
+    }
+    else if (aFreddie.img === imgShoot && aFreddie.shootTime === 0) {
+      if (aFreddie.y === 0) { //au sol
+        aFreddie.img=imgStatic;
+        aFreddie.imgRatio=imgStaticRatio;
+      }
+      else {//jumping
+        aFreddie.img=imgJump;
+        aFreddie.imgRatio=imgJumpRatio; 
+      }
     }
   }
 }
