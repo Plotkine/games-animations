@@ -1,2 +1,2 @@
 # games_animations
-js &amp; python games/animations
+p5.js &amp; python games/animations
