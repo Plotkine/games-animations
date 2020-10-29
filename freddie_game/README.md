@@ -2,6 +2,6 @@
 
 A freddie mercury game
 
-The result can be seen at https://editor.p5js.org/Plotkine/present/_6t0LDFnp
+Play the game at https://editor.p5js.org/Plotkine/present/_6t0LDFnp
 
 ![](./freddie_game.png)
