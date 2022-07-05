@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-inline'">
+<style>
+#background {
+  width: 100%;
+  height: 475px;
+  position: relative;
+  background: #000000;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #00ff00;
+}
+.animate {
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  background-color: #00ff00;
+}
+</style>
+
+<script>
+function isIn(i,j,aList) { // aList is a list of 2-lists
+  for (const coordinates of aList) {
+    if ((coordinates[0] === i) && (coordinates[1] === j)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function evolve(i,j,aList) { // game of life rules for the cell i,j
+  // calculating number of alive neighbors
+  aliveNeighbors=0;
+  [left, right, bottom, above] = getNeighbors(i,j);
+  
+  if (isIn(left,above,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(left,j % height_squares_nr,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(left,bottom,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(i % width_squares_nr,above,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(i % width_squares_nr,bottom,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(right,above,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(right,j % height_squares_nr,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(right,bottom,aList)) {
+    aliveNeighbors+=1;
+  }
+  if (isIn(i,j,aList)) { // if the cell (i,j) was alive
+    if ((aliveNeighbors !== 2) && (aliveNeighbors !== 3)) {
+      return "becomesDead";
+    }
+    else {
+      return "staysAlive";
+    }
+  }
+  else { // if the cell (i,j) was not alive
+    if (aliveNeighbors === 3) { // the cell becomes alive
+      return "becomesAlive";
+    }
+    else {
+      return "staysDead";
+    }
+  }
+}
+
+function getNeighbors(i,j) {
+  left = (((i-1) % width_squares_nr) + width_squares_nr) % width_squares_nr;
+  right = (i+1) % width_squares_nr;
+  bottom = (j+1) % height_squares_nr;
+  above = (((j-1) % height_squares_nr) + height_squares_nr) % height_squares_nr;
+  return [left, right, bottom, above]
+}
+
+function createInitialPattern() {
+  h_center = Math.floor(window.innerWidth/2); // horizontal middle of the screen in pixels
+  h_center = h_center - (((h_center % 5) + 5) % 5); // flooring to multiple of 5
+  h_center = Math.floor(h_center/5); // converting to cells instead of pixels
+  
+  v_center = Math.floor(475/2); // vertical middle of the screen in pixels
+  v_center = v_center - (((v_center % 5) + 5) % 5); // flooring to multiple of 5
+  v_center = Math.floor(v_center/5); // converting to cells instead of pixels
+
+  res = [[5,5],[6,5],[7,5],
+         [10,10],[10,11],[10,12],
+         [15 - 14,15 - 14],[16 - 14,16 - 14],[17 - 14,16 - 14],[17 - 14,15 - 14],[17 - 14,14 - 14]];
+
+  for (cell of res) { // centering the cells
+    cell[0] += h_center;
+    cell[1] += v_center;
+  }
+  return res;
+}
+
+function draw() {
+  //clearing previously drawn cells
+  document.getElementById("background").innerHTML = "";
+  //we draw the (alive) cells
+  for (const aliveCell of aliveCells) {
+    drawAliveCell(aliveCell[0], aliveCell[1]);
+  }
+
+  //we evolve the cells
+  cellsToConsider = []; // optimization: we only check for neighbors of currently alive cells
+  for ([i,j] of aliveCells) {
+      cellsToConsider.push([i,j]);
+      [left, right, bottom, above] = getNeighbors(i, j);
+      cellsToConsider.push([left, j]);
+      cellsToConsider.push([left, above]);
+      cellsToConsider.push([i, above]);
+      cellsToConsider.push([right, above]);
+      cellsToConsider.push([right, j]);
+      cellsToConsider.push([right, bottom]);
+      cellsToConsider.push([i, bottom]);
+      cellsToConsider.push([left, bottom]);
+  }
+  cellsToConsider = cellsToConsider.filter((t={},a=>!(t[a]=a in t))); /* removing duplicates
+  see https://stackoverflow.com/questions/44014799/javascript-how-to-remove-duplicate-arrays-inside-array-of-arrays#:~:text=Magic */
+
+  aliveCellsCopy=Array.from(aliveCells);
+  for ([i,j] of cellsToConsider) {
+  /*for (let i = 0; i < width_squares_nr; i++) {
+    for (let j = 0; j < height_squares_nr; j++) {*/
+    willEvolve=evolve(i,j,aliveCellsCopy);
+    if (willEvolve === "becomesDead") {
+      for(var k = 0; k < aliveCells.length; k++) { //we remove the cell from the list
+        if ((aliveCells[k][0] === i) && (aliveCells[k][1] === j)) {
+          aliveCells.splice(k,1);
+          break; //we know it can be there only once
+        }
+      }
+    }
+    else if (willEvolve === "becomesAlive") {
+      aliveCells.push([i,j]);
+    }
+  }
+}
+
+function drawAliveCell(i,j) {
+  leftValue = (i * 5).toString() + "px"
+  topValue  = (j * 5).toString() + "px"
+  document.getElementById("background").innerHTML += "<div class=\"animate\" style=\"top:" + topValue + "; left:" + leftValue + ";\"></div>"
+}
+</script>
+</head>
+
+<body>
+
+<div id="background"></div>
+
+<script>
+fps=30; // frames per second
+width = window.innerWidth;
+height = window.innerHeight;
+width_squares_nr = Math.floor(window.innerWidth / 5);  // number of squares per row
+height_squares_nr = 475 / 5; // number of squares per column
+                                          // ("5" comes from CSS animate_width = animate_height)
+aliveCells = createInitialPattern();
+setInterval(draw, 1000/fps);
+</script>
+</body>
+</html>
