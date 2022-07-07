@@ -111,9 +111,11 @@ function draw() {
   //clearing previously drawn cells
   document.getElementById("background").innerHTML = "";
   //we draw the (alive) cells
+  buffer = "" // optimization, instead of changing the HTML at each alive cell, we change it once for all
   for (const aliveCell of aliveCells) {
-    drawAliveCell(aliveCell[0], aliveCell[1]);
+    buffer += drawAliveCell(aliveCell[0], aliveCell[1]);
   }
+  document.getElementById("background").innerHTML += buffer
 
   //we evolve the cells
   cellsToConsider = []; // optimization: we only check for neighbors of currently alive cells
@@ -154,7 +156,7 @@ function draw() {
 function drawAliveCell(i,j) {
   leftValue = (i * 5).toString() + "px"
   topValue  = (j * 5).toString() + "px"
-  document.getElementById("background").innerHTML += "<div class=\"animate\" style=\"top:" + topValue + "; left:" + leftValue + ";\"></div>"
+  return "<div class=\"animate\" style=\"top:" + topValue + "; left:" + leftValue + ";\"></div>"
 }
 </script>
 </head>
