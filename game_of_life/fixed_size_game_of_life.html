@@ -38,22 +38,22 @@ function evolve(i,j,aList) { // game of life rules for the cell i,j
   if (isIn(left,above,aList)) {
     aliveNeighbors+=1;
   }
-  if (isIn(left,j % squaresDivision,aList)) {
+  if (isIn(left,j % height_squares_nr,aList)) {
     aliveNeighbors+=1;
   }
   if (isIn(left,bottom,aList)) {
     aliveNeighbors+=1;
   }
-  if (isIn(i % squaresDivision,above,aList)) {
+  if (isIn(i % width_squares_nr,above,aList)) {
     aliveNeighbors+=1;
   }
-  if (isIn(i % squaresDivision,bottom,aList)) {
+  if (isIn(i % width_squares_nr,bottom,aList)) {
     aliveNeighbors+=1;
   }
   if (isIn(right,above,aList)) {
     aliveNeighbors+=1;
   }
-  if (isIn(right,j % squaresDivision,aList)) {
+  if (isIn(right,j % height_squares_nr,aList)) {
     aliveNeighbors+=1;
   }
   if (isIn(right,bottom,aList)) {
@@ -78,24 +78,42 @@ function evolve(i,j,aList) { // game of life rules for the cell i,j
 }
 
 function getNeighbors(i,j) {
-  left = (((i-1) % squaresDivision) + squaresDivision) % squaresDivision;
-  right = (i+1) % squaresDivision;
-  bottom = (j+1) % squaresDivision;
-  above = (((j-1) % squaresDivision) + squaresDivision) % squaresDivision;
+  left = (((i-1) % width_squares_nr) + width_squares_nr) % width_squares_nr;
+  right = (i+1) % width_squares_nr;
+  bottom = (j+1) % height_squares_nr;
+  above = (((j-1) % height_squares_nr) + height_squares_nr) % height_squares_nr;
   return [left, right, bottom, above]
 }
 
 function createInitialPattern() {
-  return [[5,5],[6,5],[7,5],   [10,10],[10,11],[10,12],    [15,15],[16,16],[17,16],[17,15],[17,14]];
+  h_center = Math.floor(window.innerWidth/2); // horizontal middle of the screen in pixels
+  h_center = h_center - (((h_center % 5) + 5) % 5); // flooring to multiple of 5
+  h_center = Math.floor(h_center/5); // converting to cells instead of pixels
+  
+  v_center = Math.floor(475/2); // vertical middle of the screen in pixels
+  v_center = v_center - (((v_center % 5) + 5) % 5); // flooring to multiple of 5
+  v_center = Math.floor(v_center/5); // converting to cells instead of pixels
+
+  res = [[5,5],[6,5],[7,5],
+         [10,10],[10,11],[10,12],
+         [15 - 14,15 - 14],[16 - 14,16 - 14],[17 - 14,16 - 14],[17 - 14,15 - 14],[17 - 14,14 - 14]];
+
+  for (cell of res) { // centering the cells
+    cell[0] += h_center;
+    cell[1] += v_center;
+  }
+  return res;
 }
 
 function draw() {
   //clearing previously drawn cells
   document.getElementById("background").innerHTML = "";
   //we draw the (alive) cells
+  buffer = "" // optimization, instead of changing the HTML at each alive cell, we change it once for all
   for (const aliveCell of aliveCells) {
-    drawAliveCell(aliveCell[0], aliveCell[1]);
+    buffer += drawAliveCell(aliveCell[0], aliveCell[1]);
   }
+  document.getElementById("background").innerHTML += buffer
 
   //we evolve the cells
   cellsToConsider = []; // optimization: we only check for neighbors of currently alive cells
@@ -116,8 +134,8 @@ function draw() {
 
   aliveCellsCopy=Array.from(aliveCells);
   for ([i,j] of cellsToConsider) {
-  /*for (let i = 0; i < squaresDivision; i++) {
-    for (let j = 0; j < squaresDivision; j++) {*/
+  /*for (let i = 0; i < width_squares_nr; i++) {
+    for (let j = 0; j < height_squares_nr; j++) {*/
     willEvolve=evolve(i,j,aliveCellsCopy);
     if (willEvolve === "becomesDead") {
       for(var k = 0; k < aliveCells.length; k++) { //we remove the cell from the list
@@ -136,7 +154,7 @@ function draw() {
 function drawAliveCell(i,j) {
   leftValue = (i * 5).toString() + "px"
   topValue  = (j * 5).toString() + "px"
-  document.getElementById("background").innerHTML += "<div class=\"animate\" style=\"top:" + topValue + "; left:" + leftValue + ";\"></div>"
+  return "<div class=\"animate\" style=\"top:" + topValue + "; left:" + leftValue + ";\"></div>"
 }
 </script>
 </head>
